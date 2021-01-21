@@ -4,7 +4,8 @@
 
 1、使用 [GCLogAnalysis.java](/Week_02/code/GCLogAnalysis.java) 自己演练一遍串行/并行/CMS/G1的案例。
 
-串行GC：java -XX:+UseSerialGC -Xms512m -Xmx512m -Xloggc:gc.demo.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps GCLogAnalysis
+### 串行GC：
+java -XX:+UseSerialGC -Xms512m -Xmx512m -Xloggc:gc.demo.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps GCLogAnalysis
 ![iamge](pics/SerialGC.png)
 [0.137s][info   ][gc,start     ] GC(0) Pause Young (Allocation Failure)
 [0.144s][info   ][gc,heap      ] GC(0) PSYoungGen: 131584K->21490K(153088K) 
@@ -13,7 +14,7 @@
 [0.145s][info   ][gc,heap      ] GC(0) ParOldGen: 0K->25563K(349696K)
 > old区从0K到25563K，说明第一次youngGC就有25563K的对象被提升。
 
-并行GC：
+### 并行GC：
 java -XX:+UseParallelGC -Xms512m -Xmx512m -XX:+PrintGCDetails GCLogAnalysis
 ![iamge](pics/Parallel-1.png)
 ![iamge](pics/Parallel-2.png)
@@ -22,11 +23,11 @@ java -XX:+UseParallelGC -Xms128m -Xmx128m -XX:+PrintGCDetails GCLogAnalysis
 > 模拟OOM，发生时新生代和老年代无法回收任何对象。
 ![iamge](pics/OOM.png)
 
-CMS：
+### CMS：
 java -XX:+UseConcMarkSweepGC -Xms512m -Xmx512m  -XX:+PrintGCDetails  GCLogAnalysis
 ![iamge](pics/CMS.png)
 
-G1：
+### G1：
 java -XX:+UseG1GC -Xms512m -Xmx512m  -XX:+PrintGCDetails  GCLogAnalysis
 ![iamge](pics/G1.png)
 
@@ -37,12 +38,15 @@ java -XX:+UseG1GC -Xms512m -Xmx512m  -XX:+PrintGCDetails  GCLogAnalysis
 
 3、(选做)如果自己本地有可以运行的项目，可以按照2的方式进行演练。
 
-4、(必做)根据上述自己对于1和2的演示，写一段对于不同GC和堆内存的总结，提交到 github。
+4、(必做)根据上述自己对于1和2的演示，写一段对于不同GC和堆内存的总结，提交到 github。 
++ 堆内存太小，容易产生OOM。 
++ 堆内存太大，会造成单次垃圾回收时间过长，影响系统吞吐量。
++ 不影响性能情况下，堆尽量小，效率最大化。
++ 堆内存比较小情况下，G1没有太大的优势
++ CMS与G1追求低延迟，GC暂停时间短。并行GC吞吐量大，但GC暂停时间较长。
 
-堆内存并不是也大越好， 堆内存过小，容易产生OOM。 堆太大，会造成单次垃圾回收时间过长，影响系统吞吐量。
+
 从下图可以看出，相同的堆内存大小下，ParallelGC的性能要好于SerialGC。
-
-
 ![iamge](pics/GCCompare.png)
 
 
