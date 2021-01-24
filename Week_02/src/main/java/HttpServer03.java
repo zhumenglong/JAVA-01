@@ -28,8 +28,7 @@ public class HttpServer03 {
             printWriter.println("Content-Type:text/html;charset=utf-8");
             printWriter.println();
             printWriter.write("hello,nio");
-            printWriter.close();
-            socket.close();
+            printWriter.close();            socket.close();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
