@@ -1,80 +1,61 @@
 package gateway.outbound.netty4;
 
-import gateway.router.HttpEndpointRouter;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.*;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static java.util.regex.Pattern.compile;
+import java.net.URI;
 
 @Slf4j
 public class NettyHttpClient {
 
-    /**
-     * channel 信息
-     *
-     * @since 0.0.4
-     */
-    private Map<String, ChannelFuture> channelFutureMap;
-
-    private NettyHttpClientOutboundHandler httpClientOutboundHandler;
-
-    private List<String> urls;
-
-    public NettyHttpClient(List<String> urls) {
-        this.urls = urls;
-        this.channelFutureMap = new HashMap<>(urls.size());
-    }
-
-    public void start() {
-        log.info("开始启动客户端");
-        Bootstrap bootstrap = new Bootstrap();
+    public static void connect(String host, int port, ChannelHandlerContext gateCtx) throws Exception {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
-        bootstrap.group(workerGroup)
-                .channel(NioSocketChannel.class)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .handler(new NettyHttpClientOutboundHandler() {
-                });
-        for (int i = 0; i < urls.size(); i++) {
-            Pattern p = compile("(\\d+\\.\\d+\\.\\d+\\.\\d+)\\:(\\d+)");
-            Matcher m = p.matcher(urls.get(i));
-            String host = null;
-            String port = null;
-            while (m.find()) {
-                host = m.group(1);
-                port = m.group(2);
-            }
-            try {
-                ChannelFuture channelFuture = bootstrap.connect(host, Integer.parseInt(port)).syncUninterruptibly();
-                channelFutureMap.put(urls.get(i), channelFuture);
-                log.info("RPC 服务启动客户端完成，监听端口：" + port);
-            } catch (Exception e) {
-                log.error("RPC 客户端遇到异常", e);
-                throw new RuntimeException(e);
-            }
+        try {
+            Bootstrap b = new Bootstrap();
+            b.group(workerGroup);
+            b.channel(NioSocketChannel.class);
+            b.option(ChannelOption.SO_KEEPALIVE, true);
+            b.handler(new ChannelInitializer<SocketChannel>() {
+                @Override
+                public void initChannel(SocketChannel ch) throws Exception {
+                    // 客户端接收到的是httpResponse响应，所以要使用HttpResponseDecoder进行解码
+                    ch.pipeline().addLast(new HttpResponseDecoder());
+                    // 客户端发送的是httpRequest，所以要使用HttpRequestEncoder进行编码
+                    ch.pipeline().addLast(new HttpRequestEncoder());
+                    ch.pipeline().addLast(new NettyHttpClientOutboundHandler(gateCtx));
+                }
+            });
+
+            // Start the client.
+            ChannelFuture f = b.connect(host, port).sync();
+
+            URI uri = new URI("http://" + host + ":" + port);
+            String msg = "Are you ok?";
+            DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET,
+                    uri.toASCIIString(), Unpooled.wrappedBuffer(msg.getBytes("UTF-8")));
+            // 构建http请求
+            request.headers().set(HttpHeaderNames.HOST, host);
+            // request.headers().set(HttpHeaderNames.CONNECTION, "keep-alive");
+            request.headers().set(HttpHeaderNames.CONTENT_LENGTH, request.content().readableBytes());
+
+            f.channel().write(request);
+            f.channel().flush();
+            f.channel().closeFuture().sync();
+        } finally {
+            workerGroup.shutdownGracefully();
         }
+
     }
 
-
-    public void execute(final FullHttpRequest inbound, final ChannelHandlerContext ctx, final String url) {
-        ChannelFuture channelFuture = channelFutureMap.get(url);
-        Channel channel = channelFuture.channel();
-        log.info("客户端发送请求，url: {}", url);
-        String msg = "{\"msgType\":\"req\",\"clientId\":\"请求数据\"}";
-        ByteBuf buf = Unpooled.buffer();
-        buf.writeBytes(msg.getBytes());
-        channel.writeAndFlush(buf);
-    }
+    /*public static void main(String[] args) throws Exception {
+        NettyHttpClient client = new NettyHttpClient();
+        client.connect("127.0.0.1", 8801);
+    }*/
 }

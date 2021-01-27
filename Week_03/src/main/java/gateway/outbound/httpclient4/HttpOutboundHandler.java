@@ -3,6 +3,7 @@ package gateway.outbound.httpclient4;
 import gateway.filter.HeaderHttpResponseFilter;
 import gateway.filter.HttpRequestFilter;
 import gateway.filter.HttpResponseFilter;
+import gateway.outbound.netty4.NettyHttpClient;
 import gateway.router.HttpEndpointRouter;
 import gateway.router.RandomHttpEndpointRouter;
 import gateway.router.RoundRibbonHttpEndpointRouter;
@@ -74,6 +75,11 @@ public class HttpOutboundHandler {
         final String url = backendUrl + fullRequest.uri();
         filter.filter(fullRequest, ctx);
         proxyService.submit(() -> fetchGet(fullRequest, ctx, url));
+        /*try {
+            NettyHttpClient.connect("127.0.0.1", 8801,ctx);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
     }
 
     private void fetchGet(final FullHttpRequest inbound, final ChannelHandlerContext ctx, final String url) {
