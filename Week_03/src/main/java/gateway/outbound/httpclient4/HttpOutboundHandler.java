@@ -74,12 +74,12 @@ public class HttpOutboundHandler {
         String backendUrl = router.route(this.backendUrls);
         final String url = backendUrl + fullRequest.uri();
         filter.filter(fullRequest, ctx);
-        proxyService.submit(() -> fetchGet(fullRequest, ctx, url));
-        /*try {
-            NettyHttpClient.connect("127.0.0.1", 8801,ctx);
+        // proxyService.submit(() -> fetchGet(fullRequest, ctx, url));
+        try {
+            NettyHttpClient.connect(url, ctx);
         } catch (Exception e) {
             e.printStackTrace();
-        }*/
+        }
     }
 
     private void fetchGet(final FullHttpRequest inbound, final ChannelHandlerContext ctx, final String url) {

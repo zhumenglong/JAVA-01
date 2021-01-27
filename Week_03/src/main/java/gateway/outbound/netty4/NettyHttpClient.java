@@ -14,8 +14,9 @@ import java.net.URI;
 @Slf4j
 public class NettyHttpClient {
 
-    public static void connect(String host, int port, ChannelHandlerContext gateCtx) throws Exception {
+    public static void connect(String url, ChannelHandlerContext gateCtx) throws Exception {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
+        URI uri = new URI(url);
 
         try {
             Bootstrap b = new Bootstrap();
@@ -34,14 +35,12 @@ public class NettyHttpClient {
             });
 
             // Start the client.
-            ChannelFuture f = b.connect(host, port).sync();
-
-            URI uri = new URI("http://" + host + ":" + port);
+            ChannelFuture f = b.connect(uri.getHost(), uri.getPort()).sync();
             String msg = "Are you ok?";
             DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET,
                     uri.toASCIIString(), Unpooled.wrappedBuffer(msg.getBytes("UTF-8")));
             // 构建http请求
-            request.headers().set(HttpHeaderNames.HOST, host);
+            request.headers().set(HttpHeaderNames.HOST, uri.getHost());
             // request.headers().set(HttpHeaderNames.CONNECTION, "keep-alive");
             request.headers().set(HttpHeaderNames.CONTENT_LENGTH, request.content().readableBytes());
 
