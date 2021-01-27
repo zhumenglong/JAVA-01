@@ -10,8 +10,10 @@ import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
@@ -45,30 +47,15 @@ public class NettyHttpClientOutboundHandler extends ChannelInboundHandlerAdapter
         }
         if (msg instanceof DefaultLastHttpContent) {
             HttpContent content = (HttpContent) msg;
-            String body = content.content().toString(CharsetUtil.UTF_8);
-            DefaultFullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, OK, Unpooled.wrappedBuffer(body.getBytes()));
-            httpResponse.headers().set(CONTENT_TYPE, "application/json");
-            httpResponse.headers().set("Content-Length", body.length());
-            gateCtx.write(httpResponse).addListener(ChannelFutureListener.CLOSE);
-            // 清空缓存区
-            gateCtx.flush();
-            // 关闭channel
-            ctx.close();
-
-
-            /*HttpContent content = (HttpContent) msg;
             ByteBuf buf = content.content();
-            int contentLength = buf.readableBytes();
             String res = buf.toString(io.netty.util.CharsetUtil.UTF_8);
             buf.release();
 
-            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1,
-                    OK, Unpooled.wrappedBuffer(res.getBytes("UTF-8")));
+            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(res.getBytes("UTF-8")));
             response.headers().set(CONTENT_TYPE, "application/json");
-            response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
-            gateCtx.write(response);
-            gateCtx.flush();*/
-
+            response.headers().set(CONTENT_LENGTH, res.getBytes(StandardCharsets.UTF_8).length);
+            gateCtx.write(response).addListener(ChannelFutureListener.CLOSE);;
+            gateCtx.flush();
         }
 
     }
