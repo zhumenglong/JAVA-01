@@ -3,7 +3,9 @@ package java0.conc0303;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.LockSupport;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 本周作业：（必做）思考有多少种方式，在main函数启动一个新线程或线程池，
@@ -163,6 +165,39 @@ public class Homework03 {
             e.printStackTrace();
         }
         System.out.println(result8.get());
+
+        /**
+         * 方式9： LockSupport
+         */
+        AtomicInteger result9 = new AtomicInteger();
+        Thread mainThread = Thread.currentThread();
+        new Thread(() -> {
+            result9.set(sum());
+            LockSupport.unpark(mainThread);
+        }).start();
+        LockSupport.park();
+        System.out.println(result9.get());
+
+        /**
+         * 方式10：ReentrantLock
+         */
+        AtomicInteger result10 = new AtomicInteger();
+
+        ReentrantLock lock1 = new ReentrantLock();
+        Condition condition = lock1.newCondition();
+        new Thread(() -> { result10.set(sum());
+            condition.signal();
+        }).start();
+        try {
+            lock1.lock();
+            // 放弃CPU执行权
+            condition.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }finally {
+            lock1.unlock();
+        }
+        System.out.println(result10.get());
 
 
 
