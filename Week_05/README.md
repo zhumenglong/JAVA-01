@@ -42,5 +42,6 @@
 4.3 （中级挑战）基于前述改造，将网关请求前后端分离，中级使用 JMS 传递消息；
 
 4.4 （中级挑战）尝试使用 ByteBuddy 实现一个简单的基于类的 AOP；
+[ByteBuddyTest.java](/spring01/src/main/java/learn/bytebuddy/ByteBuddyTest.java)
 
 4.5 （超级挑战）尝试使用 ByteBuddy 与 Instrument 实现一个简单 JavaAgent 实现无侵入 下的 AOP。
