@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+                        http://www.springframework.org/schema/context
+                        http://www.springframework.org/schema/context/spring-context-3.2.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+    <context:component-scan base-package="learn"/>
+    <bean id="foo" class="learn.biz.Foo"/>
+    <!--自动扫描aop注解-->
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+    <!--注解aop-->
+    <bean id="aopByXml" class="learn.aop.AopByAnnotation"/>
+
+    <bean id="school" class="learn.beans.School">
+        <constructor-arg name="name" value="Tsinghua University"/>
+        <property name="classes">
+            <list>
+                <bean id="class1" class="learn.beans.Klass">
+                    <constructor-arg name="grade" value="1"/>
+                    <property name="students">
+                        <list>
+                            <bean id="student1" class="learn.beans.Student">
+                                <constructor-arg name="name" value="麦兜"/>
+                            </bean>
+                        </list>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="httpServer" class="learn.netty.inbound.HttpServer">
+        <property name="port" value="8080"/>
+        <property name="httpInitializer" ref="httpInitializer"/>
+    </bean>
+
+    <bean id="httpInitializer" class="learn.netty.inbound.HttpInitializer">
+        <property name="handler" ref="inbound"/>
+        <property name="backServerUrls" ref="urls"/>
+    </bean>
+
+    <bean id="urls" class="java.util.ArrayList">
+        <constructor-arg>
+            <value>http://localhost:8088/api/hello</value>
+        </constructor-arg>
+    </bean>
+
+    <bean id="inbound" class="learn.netty.inbound.HttpInboundServerHandler">
+        <property name="inputFilter" ref="inputFilter"/>
+        <property name="handlerOne" ref="outbound"/>
+    </bean>
+    
+    <bean id="outbound" class="learn.netty.outbound.HttpOutboundServerHandlerOne">
+        <property name="router" ref="router"/>
+        <property name="outFilter" ref="outputFilter"/>
+        <property name="backendUrls" ref="urls"/>
+    </bean>
+
+    <!-- filter bean-->
+    <bean id="inputFilter" class="learn.netty.filter.HeaderHttpRequestFilter"/>
+    <bean id="outputFilter" class="learn.netty.filter.HeaderHttpResponseFilter"/>
+
+    <!-- router bean-->
+    <bean id="router" class="learn.netty.router.HttpEndpointRouterImpl"/>
+
+</beans>
+
