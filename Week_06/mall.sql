@@ -62,7 +62,7 @@ CREATE TABLE `mall_order` (
   `receiver_info_id` INT NULL comment '收货人id',
   `total_price` DECIMAL(18,2) NULL comment '总金额',
   `total_discount` DECIMAL(18,2) NULL comment '总折扣',
-  `status` VARCHAR(1) NULL comment '订单状态(1-待支付，2-付款中，3-已付款|待发货，4-作废中，5-交易已关闭)',
+  `status` VARCHAR(1) NULL comment '订单状态(1-待付款，2-付款中，3-已付款|待发货，4-待收货|已发货，5-交易成功|待评价，6-交易已关闭)',
   `close_status` VARCHAR(1) NULL comment '关闭状态（1-超时未支付， 2-退款关闭 ，3-买家取消 ，4-已通过货到付款交易 可能还有其他关闭原因）',
   `create_time` timestamp not null comment '创建时间',
   `update_time` timestamp not null comment '更新时间',
