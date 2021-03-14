@@ -8,8 +8,8 @@
 4、(选做)重新搭建一套4个库各64个表的分库分表，将作业2中的数据迁移到新分库 。
 
 ### 作业 2 设计对前面的订单表数据进行水平分库分表，拆分2个库，每个库16张表。 并在新结构在演示常见的增删改查操作。代码、sql 和配置文件，上传到 Github
-[sql](./geektime-work15/sql)
-[测试案例](./geektime-work15/src/test/java/DataSourceTest.java)
+[sql](./OrderSharding/sql)
+[测试案例](./OrderSharding/src/test/java/sharding/DataSourceTest.java)
 
 # 第15课 超越分库分表-数据库拆分与分库分表
 
@@ -30,7 +30,3 @@
 7、(选做☆)设计实现一个 AT 分布式事务框架的简单 Demo，仅需要支持根据主键 id 进行的单个删改操作的 SQL 或插入操作的事务。
 
 ### 作业2 基于 hmily TCC 或 ShardingSphere 的 Atomikos XA 实现一个简单的分布 式事务应用 demo(二选一)，提交到 Github。
-
-[hmily TCC](./geektime-work16/shardingsphere-XA/src/test/java/DataSourceTest.java)
-
-[ShardingSphere XA](./geektime-work16/hmily-tcc/src/main/java/pers/peixinyi/work/tcc/service/impl/HelloServiceImpl.java)
